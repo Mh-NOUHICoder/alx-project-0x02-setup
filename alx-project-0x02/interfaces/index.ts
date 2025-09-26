@@ -1,20 +1,21 @@
-interface CardProps {
-    title: string;
-    description: string;
-    image: string;
-    link: string;   
-    category?: string;
-    className?: string;
+// interfaces/index.ts
+
+export interface CardProps {
+  title: string;
+  description: string;
+  image: string;
+  link: string;
+  category?: string;
+  className?: string;
 }
 
-// Add these types for the hook
-interface CardItem extends Omit<CardProps, 'className'> {
-    id: number;
+// Type used in the hook (without className, with id)
+export interface CardItem extends Omit<CardProps, 'className'> {
+  id: number;
 }
 
-interface UseCardsReturn {
-    cardsData: CardItem[];
-    cardClassName: string;
+// Return type for the custom hook
+export interface UseCardsReturn {
+  cardsData: CardItem[];
+  cardClassName: string;
 }
-
-export type { CardProps, CardItem, UseCardsReturn };
