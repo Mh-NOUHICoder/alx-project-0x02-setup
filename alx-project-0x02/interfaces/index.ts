@@ -26,3 +26,13 @@ export interface PostData {
   image?: string;
   category?: string;
 }
+
+export interface ButtonProps {
+  text: string;
+  size?: 'small' | 'medium' | 'large';
+  shape?: 'rounded-sm' | 'rounded-md' | 'rounded-lg' | 'rounded-full';
+   color?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'gray';
+  onClick: () => void;
+
+
+}
