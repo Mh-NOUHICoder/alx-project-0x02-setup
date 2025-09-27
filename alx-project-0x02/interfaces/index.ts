@@ -19,3 +19,10 @@ export interface UseCardsReturn {
   cardsData: CardItem[];
   cardClassName: string;
 }
+
+export interface PostData {
+  title: string;
+  content: string;
+  image?: string;
+  category?: string;
+}
