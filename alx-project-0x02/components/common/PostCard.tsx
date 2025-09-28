@@ -42,7 +42,7 @@ const PostCard: React.FC<PostProps> = ({ id, title, content, userId, onEdit, onD
             <Card
                 title={title} // Use prop value
                 content={content} // Use prop value
-                image="https://via.placeholder.com/400x200"
+                image="https://cdn.pixabay.com/photo/2018/02/04/17/36/polaroid-3130370_960_720.jpg"
                 link={`/posts/${id}`} // Create a link to the post detail
                 className="hover:shadow-lg transition-shadow duration-300"
             />

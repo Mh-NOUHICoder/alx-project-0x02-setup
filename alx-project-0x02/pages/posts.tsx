@@ -1,147 +1,65 @@
 // pages/posts.tsx
 import { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
-import Card from '@/components/common/Card';
-import { useCards } from '@/hooks/useCards';
-import PostModal from '@/components/common/PostModal';
-import { CardItem, PostData } from '@/interfaces';
-import Button from '@/components/common/Button';
+import PostCard from '@/components/common/PostCard';
+import { PostProps } from '@/interfaces';
 
 const PostsPage: React.FC = () => {
-    const { cardsData, cardClassName } = useCards();        
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingPost, setEditingPost] = useState<CardItem | null>(null);
-    const [isMounted, setIsMounted] = useState(false);
-    const [posts, setPosts] = useState<CardItem[]>([]);
+    const [posts, setPosts] = useState<PostProps[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        setIsMounted(true);
-        const savedPosts = localStorage.getItem('userPosts');                   
-        if (savedPosts) {
-            setPosts(JSON.parse(savedPosts));
-        }   
+        const fetchPosts = async () => {
+            try {
+                const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch posts');
+                }
+                const data = await response.json();
+                setPosts(data);
+            } catch (err) {
+                if (err instanceof Error) {
+                    setError(err.message);
+                } else {
+                    setError('An error occurred while fetching posts');
+                }
+            }finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchPosts();
     }, []);
 
-    useEffect(() => {
-        if (isMounted) {
-            localStorage.setItem('userPosts', JSON.stringify(posts));
-        }
-    }, [posts, isMounted]); 
-
-    const openModal = () => {
-        setEditingPost(null); 
-        setIsModalOpen(true);
-    };
-
-    const closeModal = () => {
-        setEditingPost(null);
-        setIsModalOpen(false);  
-    };
-
-    const handleSubmitPost = (postData: PostData) => {
-        if (editingPost) {
-            // Update existing post
-            setPosts(posts.map(post => 
-                post.id === editingPost.id 
-                    ? { 
-                        ...post, 
-                        title: postData.title,
-                        content: postData.content,
-                        image: postData.image || '',
-                        category: postData.category,
-                        link: post.link // Keep existing link
-                    }
-                    : post
-            ));
-        } else {
-            // Create new post
-            const newPost: CardItem = {
-                id: Date.now(),
-                title: postData.title,
-                content: postData.content,
-                image: postData.image || '',
-                category: postData.category,
-                link: `/post/${Date.now()}` // Create a proper link
-            };
-            setPosts([...posts, newPost]);
-        }
-        closeModal();
-    };
-
-    const handleEditPost = (post: CardItem) => {
-        setEditingPost(post);
-        setIsModalOpen(true);
-    };
-
     const handleDeletePost = (postId: number) => {
-        setPosts(posts.filter(post => post.id !== postId));
+        // Implement delete logic, then update state
+        setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
     };
 
-    // Prepare initial data for edit mode
-    const getInitialData = (): PostData | undefined => {
-        if (!editingPost) return undefined;
-        
-        return {
-            title: editingPost.title,
-            content: editingPost.content,
-            image: editingPost.image,
-            category: editingPost.category
-        };
-    };
-
-    // Combine hook data with user posts for display
-    const allPosts = [...cardsData, ...posts];
+    if (isLoading) return <div className="container mx-auto p-4">Loading posts...</div>;
+    if (error) return <div className="container mx-auto p-4 text-red-500">Error: {error}</div>;
 
     return (
         <div className="min-h-screen bg-gray-50">
             <Header />
-            
             <main className="container mx-auto px-4 py-8">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900">Posts</h1>
-                    <Button 
-                        text="Create New Post"
-                        onClick={openModal}
-                        color="primary"
-                        size="medium"
-                        shape="rounded-md"
-                    />
-                </div>
-
+                <h1 className="text-3xl font-bold text-gray-900 mb-6">All Posts</h1>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {allPosts.map((post) => (
-                        <Card
+                    {posts.map((post) => (
+                        <PostCard
                             key={post.id}
+                            id={post.id}
                             title={post.title}
-                            content={post.content}
-                            image={post.image}
-                            link={post.link}
-                            category={post.category}
-                            className={cardClassName}
-                            onEdit={() => handleEditPost(post)}
+                            content={post.content} // JSONPlaceholder uses 'body'
+                            userId={post.userId}
                             onDelete={() => handleDeletePost(post.id)}
                         />
                     ))}
-                    
-                    {allPosts.length === 0 && (
-                        <div className="col-span-full text-center py-12">
-                            <p className="text-gray-500 text-lg">No posts yet. Create your first post!</p>
-                        </div>
-                    )}
                 </div>
-
-                {isModalOpen && (
-                    <PostModal
-                        isOpen={isModalOpen}
-                        onClose={closeModal}
-                        onSubmit={handleSubmitPost}  // Changed from onSave to onSubmit
-                        initialData={getInitialData()}
-                        mode={editingPost ? 'edit' : 'create'}
-                    />
-                )}
             </main>
         </div>
     );
-}
+};
 
 export default PostsPage;
