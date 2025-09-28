@@ -23,7 +23,7 @@ const Card: React.FC<ExtendedCardProps> = ({
     <div className={`border rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow ${className}`}>
       <img src={image} alt={title} className="w-full h-48 object-cover" />
       <div className="p-4">
-        <h2 className="text-xl font-semibold mb-2">{title}</h2>
+        <h2 className="text-xl text-gray-800 font-semibold mb-2">{title}</h2>
         <p className="text-gray-600 mb-4">{content}</p>
         <div className="flex justify-between items-center">
           <span className="text-sm text-gray-500">{category}</span>

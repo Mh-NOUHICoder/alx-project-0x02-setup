@@ -36,3 +36,13 @@ export interface ButtonProps {
 
 
 }
+
+// interfaces/index.ts
+export interface PostProps {
+  id: number;
+  title: string;
+  content: string; // Or 'body', if that's the key from the API
+  userId: number;
+  onEdit?: () => void; // Optional handler for edit action
+  onDelete?: () => void; // Optional handler for delete action
+}
