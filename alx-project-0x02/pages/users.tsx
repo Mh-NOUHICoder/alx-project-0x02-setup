@@ -1,93 +1,50 @@
 // pages/users.tsx
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Header from '@/components/layout/Header';
 import UserCard from '@/components/common/UserCard';
 import { type UserProps } from '@/interfaces';
 
-// This becomes a client-side component. Remove getUsers() and metadata.
-export default function UsersPage() {
-  const [users, setUsers] = useState<UserProps[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const res = await fetch('https://jsonplaceholder.typicode.com/users');
-        
-        if (!res.ok) {
-          throw new Error(`Failed to fetch users: ${res.status}`);
-        }
-        
-        const usersData = await res.json();
-        setUsers(usersData);
-      } catch (err) {
-        setError('Unable to load users. Please try again later.');
-        console.error('Error fetching users:', err);
-      } finally {
-        setLoading(false);
-      }
+// Fetch users from the API at build time
+async function getUsers(): Promise<UserProps[]> {
+  try {
+    const res = await fetch('https://jsonplaceholder.typicode.com/users');
+    
+    if (!res.ok) {
+      throw new Error(`Failed to fetch users: ${res.status} ${res.statusText}`);
     }
-
-    fetchUsers();
-  }, []); // Empty dependency array means this runs once on mount
-
-  const handleRetry = () => {
-    setError(null);
-    setLoading(true);
-    // The useEffect will run again because loading state changed
-  };
-
-  // ... (Keep your existing JSX return structure, using the new state variables like 'loading' and 'error')
-
-
-  if (loading) {
-    return (
-      <>
-        <Header />
-        <div className="min-h-screen bg-gray-50 py-8">
-          <div className="container mx-auto px-4">
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-gray-800 mb-4">Users</h1>
-              <div className="text-center py-12">
-                <div className="text-gray-400 text-6xl mb-4">⏳</div>
-                <h2 className="text-2xl font-semibold text-gray-600 mb-2">Loading Users...</h2>
-                <p className="text-gray-500">Please wait while we load the user data.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </>
-    );
+    
+    const users = await res.json();
+    return users;
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    throw new Error('Unable to load users. Please try again later.');
   }
+}
 
-  if (error) {
-    return (
-      <>
-        <Header />
-        <div className="min-h-screen bg-gray-50 py-8">
-          <div className="container mx-auto px-4">
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-gray-800 mb-4">Users</h1>
-              <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
-                <h2 className="text-xl font-semibold text-red-800 mb-2">Error Loading Users</h2>
-                <p className="text-red-600 mb-4">
-                  {error}
-                </p>
-                <button 
-                  onClick={handleRetry}
-                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
-                >
-                  Retry
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </>
-    );
+// This function runs at build time on the server-side
+export async function getStaticProps() {
+  try {
+    const users = await getUsers();
+    
+    return {
+      props: {
+        users,
+      },
+      // Re-generate the page at most once every 60 seconds if needed
+      // revalidate: 60,
+    };
+  } catch (error) {
+    // If there's an error, return empty users array
+    return {
+      props: {
+        users: [],
+      },
+    };
   }
+}
 
+// The page component receives users as a prop from getStaticProps
+export default function UsersPage({ users }: { users: UserProps[] }) {
   return (
     <>
       <Header />
@@ -168,7 +125,7 @@ export default function UsersPage() {
 
               {/* Footer Stats */}
               <div className="mt-12 text-center text-gray-500">
-                <p>Showing {users.length} users • Last updated just now</p>
+                <p>Showing {users.length} users</p>
               </div>
             </>
           )}
@@ -177,3 +134,4 @@ export default function UsersPage() {
     </>
   );
 }
+
