@@ -46,3 +46,21 @@ export interface PostProps {
   onEdit?: () => void; // Optional handler for edit action
   onDelete?: () => void; // Optional handler for delete action
 }
+
+export interface UserProps {
+  id: number;
+  name: string;
+  username: string;
+  email: string;
+  address: {
+    street: string;
+    suite: string;
+    city: string;
+    zipcode: string;
+  };
+  phone: string;
+  website: string;
+  company: {
+    name: string;
+  };
+}
